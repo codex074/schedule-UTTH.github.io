@@ -19,73 +19,195 @@
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
+            overflow: hidden; /* Hide scrollbars */
+        }
+        
+        /* Animated Gradient Background */
+        .animated-gradient {
+            background: linear-gradient(-45deg, #6dd5ed, #2193b0, #1cb5e0, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Form container animation */
+        .form-container {
+            animation: fadeInDown 0.8s ease-out;
+            z-index: 10; /* Ensure form is above canvas */
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Canvas for particle background */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Behind the form container */
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
+    <!-- Particle Canvas -->
+    <canvas id="particle-canvas"></canvas>
 
-    <!-- Main Container -->
-    <div class="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-100 to-purple-200">
-        <div class="w-full max-w-sm p-8 space-y-6 bg-white rounded-2xl shadow-xl">
+    <!-- Main Container with Animated Background -->
+    <div class="relative flex items-center justify-center min-h-screen p-4 animated-gradient">
+        <div class="w-full max-w-sm p-8 space-y-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl form-container">
             <!-- Header -->
             <div class="text-center">
-                <h1 class="text-3xl font-bold text-gray-800">ตารางเวรดี๊ดี</h1>
-                <p class="mt-2 text-gray-600">กรุณาลงชื่อเข้าใช้เพื่อเข้าสู่ระบบ</p>
+                <h1 class="text-3xl font-bold text-gray-900">ตารางเวรดี๊ดี</h1>
+                <p class="mt-2 text-gray-700">ลงชื่อเข้าใช้เพื่อดูตารางเวรของคุณ</p>
             </div>
 
             <!-- Login Form -->
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label for="username" class="text-sm font-medium text-gray-700">ชื่อผู้ใช้</label>
-                    <input id="username" type="text" required class="w-full px-4 py-2 mt-1 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <form id="loginForm" class="space-y-6">
+                <!-- Username Field with Icon -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <input id="username" type="text" required class="w-full py-3 pl-10 pr-4 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="ชื่อผู้ใช้">
                 </div>
-                <div>
-                    <label for="password" class="text-sm font-medium text-gray-700">รหัสผ่าน</label>
-                    <input id="password" type="password" required class="w-full px-4 py-2 mt-1 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <!-- Password Field with Icon and Toggle -->
+                <div class="relative">
+                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <input id="password" type="password" required class="w-full py-3 pl-10 pr-10 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="รหัสผ่าน">
+                    <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer">
+                        <svg id="eye-open" class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                        <svg id="eye-closed" class="w-5 h-5 text-gray-500 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243l-4.243-4.243" /></svg>
+                    </button>
                 </div>
-                <button type="submit" class="w-full px-4 py-3 font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300">
-                    Login
+                
+                <button type="submit" class="w-full px-4 py-3 font-semibold text-white bg-blue-600 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:-translate-y-1 transition-all duration-300">
+                    เข้าสู่ระบบ
                 </button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- ส่วนที่ต้องแก้ไข ---
-        // กำหนดชื่อผู้ใช้และรหัสผ่านที่ถูกต้องตรงนี้
-        const CORRECT_USERNAME = "admin"; // <-- เปลี่ยนเป็นชื่อผู้ใช้ที่ต้องการ
-        const CORRECT_PASSWORD = "5774"; // <-- เปลี่ยนเป็นรหัสผ่านที่ต้องการ
+        // --- Particle Animation Script ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray;
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY; this.size = size; this.color = color;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) { this.directionX = -this.directionX; }
+                if (this.y > canvas.height || this.y < 0) { this.directionY = -this.directionY; }
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+        function initParticles() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 5) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * .4) - .2;
+                let directionY = (Math.random() * .4) - .2;
+                let color = 'rgba(255, 255, 255, 0.8)';
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+        }
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            initParticles();
+        });
+        initParticles();
+        animateParticles();
+
+        // --- Login Logic ---
+
+        // ***** แก้ไขและเพิ่มผู้ใช้ตรงนี้ *****
+        const users = [
+            { username: "admin", password: "5774" },
+            { username: "user1", password: "password123" },
+            { username: "somsak", password: "pincode4321" }
+            // เพิ่มผู้ใช้อื่นๆ ต่อที่นี่ได้เลย
+            // { username: "ชื่อผู้ใช้ใหม่", password: "รหัสผ่านใหม่" },
+        ];
+        // **********************************
 
         const loginForm = document.getElementById('loginForm');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const eyeOpen = document.getElementById('eye-open');
+        const eyeClosed = document.getElementById('eye-closed');
+
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeOpen.classList.toggle('hidden');
+            eyeClosed.classList.toggle('hidden');
+        });
 
         loginForm.addEventListener('submit', (e) => {
-            // ป้องกันไม่ให้ฟอร์มรีเฟรชหน้าเว็บ
             e.preventDefault();
-
-            // ดึงค่าที่ผู้ใช้กรอก
             const usernameInput = document.getElementById('username').value;
-            const passwordInput = document.getElementById('password').value;
+            const passwordInputValue = passwordInput.value;
+            
+            // ตรวจสอบว่ามี user/pass ตรงกับในรายการหรือไม่
+            const isValidUser = users.some(user => user.username === usernameInput && user.password === passwordInputValue);
 
-            // ตรวจสอบข้อมูล
-            if (usernameInput === CORRECT_USERNAME && passwordInput === CORRECT_PASSWORD) {
-                // ถ้าข้อมูลถูกต้อง
+            if (isValidUser) {
                 Swal.fire({
                     icon: 'success',
                     title: 'เข้าสู่ระบบสำเร็จ!',
                     text: 'กำลังนำคุณไปยังหน้าหลัก...',
                     timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    customClass: { popup: 'rounded-xl' }
                 }).then(() => {
-                    // ส่งผู้ใช้ไปยังหน้าเนื้อหาหลัก
-                    // **สำคัญ** ตรวจสอบให้แน่ใจว่าชื่อไฟล์ถูกต้อง (main.html)
                     window.location.href = 'main.html'; 
                 });
             } else {
-                // ถ้าข้อมูลไม่ถูกต้อง
                 Swal.fire({
                     icon: 'error',
                     title: 'ผิดพลาด',
-                    text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!'
+                    text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!',
+                    customClass: { popup: 'rounded-xl' }
                 });
             }
         });
